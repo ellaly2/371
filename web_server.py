@@ -12,7 +12,8 @@ def handle_request(c):
 
     lines = request.split("\r\n")
     request_line = lines[0].split()
-
+    if len(request_line) < 3:
+        return
     method,path,version = request_line
 
     if not version in SUPPORTED_VERSIONS:
