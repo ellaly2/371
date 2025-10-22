@@ -4,23 +4,28 @@ import time
 
 HOST = "127.0.0.1"
 PORT = 8080
+SUPPORTED_VERSIONS = ["HTTP/1.1", "HTTP/1.0"]
 
 
 def handle_request(c):
     request = c.recv(1024).decode("utf-8")
-    lines = c.split("\r\n")
-    if len(lines) == 0:
-        c.sendall(build_header(400))
+
+    lines = request.split("\r\n")
+    request_line = lines[0].split()
+
+    method,path,version = request_line
+
+    if not version in SUPPORTED_VERSIONS:
+        c.sendall(build_header(505))
         return
     
-    method, path = lines[0].split()[:2]
-    filepath = "." + path
-    if filepath == "./":
-        filepath = "./test.html"
-
     if method != "GET":
         c.sendall(build_header(403))
         return
+    
+    filepath = "." + path
+    if filepath == "./":
+        filepath = "./test.html"
     
     if not os.path.exists(filepath):
         c.sendall(build_header(404))
@@ -41,7 +46,8 @@ def handle_request(c):
     with open(filepath, "rb") as f:
         body = f.read()
     headers = build_header(200)
-    return headers, body
+    c.sendall(headers + body)
+
             
 
 def build_header(status_code):
@@ -69,3 +75,6 @@ def main():
             c, addr = s.accept()
             with c:
                 handle_request(c)
+
+if __name__ == "__main__":
+    main()
