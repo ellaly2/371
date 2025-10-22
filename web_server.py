@@ -53,6 +53,8 @@ def handle_request(c):
 def build_header(status_code):
     if status_code == 200:
         header = "HTTP/1.1 200 OK\r\n"
+    elif status_code == 304:
+        header = "HTTP/1.1 304 Not Modified\r\n"
     elif status_code == 404:
         header = "HTTP/1.1 404 Not Found\r\n"
     elif status_code == 403:
