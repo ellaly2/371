@@ -51,7 +51,21 @@ def handle_request(c):
         timestamp = time.strftime("%H:%M:%S", time.localtime())
         body += f"\n<!-- Served at {timestamp} -->".encode()
         headers = build_header(200, filepath)
-        c.sendall(headers + body)
+        
+        c.sendall(headers)
+
+       
+        frame_size = 50  
+        print(f"Serving file in frames: {filepath}")
+
+        for i in range(0, len(body), frame_size):
+            frame = body[i:i+frame_size]
+          
+            frame_header = f"--FRAME {i//frame_size}\r\n".encode()
+            c.sendall(frame_header + frame)
+            print(f"Sent frame {i//frame_size} for {path} ({len(frame)} bytes)")
+            time.sleep(0.1)  
+
 
     except Exception as e:
         print("Handler exception:", e)
