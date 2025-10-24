@@ -1,6 +1,7 @@
 import socket
 import os
 import time
+import threading
 
 HOST = "127.0.0.1"
 PORT = 8080
@@ -46,6 +47,8 @@ def handle_request(c):
                 return
     with open(filepath, "rb") as f:
         body = f.read()
+    timestamp = time.strftime("%H:%M:%S", time.localtime())
+    body += f"\n<!-- Served at {timestamp} -->".encode()
     headers = build_header(200)
     c.sendall(headers + body)
 
@@ -74,10 +77,13 @@ def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
         s.listen(5)
+        print(f"Serving on {HOST}:{PORT}")
         while True:
             c, addr = s.accept()
-            with c:
-                handle_request(c)
+            t = threading.Thread(target=handle_request, args=(c,))
+            t.start()
+            #with c:
+            #    handle_request(c)
 
 if __name__ == "__main__":
     main()
